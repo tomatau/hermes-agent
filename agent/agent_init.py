@@ -44,6 +44,22 @@ from hermes_constants import get_hermes_home
 from hermes_state_ids import new_session_id
 from utils import base_url_host_matches, is_truthy_value
 
+
+def _resolve_kanban_worker_guidance(valid_tool_names: set[str]) -> str:
+    """Return worker protocol only for an actual dispatcher-owned task."""
+    if "kanban_show" not in valid_tool_names or not os.environ.get(
+        "HERMES_KANBAN_TASK"
+    ):
+        return ""
+    from agent.delegation_context import is_dispatcher_owned_worker_context
+
+    if not is_dispatcher_owned_worker_context():
+        return ""
+    from agent.prompt_builder import KANBAN_GUIDANCE
+
+    return KANBAN_GUIDANCE
+
+
 # Same logger name as run_agent so caplog/patches on "run_agent" see our records.
 logger = logging.getLogger("run_agent")
 
